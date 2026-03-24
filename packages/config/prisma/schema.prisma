@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PlanTier {
+  anonymous
+  free
+  premium
+  business
+}
+
+enum JobStatus {
+  uploading
+  validating
+  queued
+  processing
+  complete
+  failed
+  expired
+  cancelled
+}
+
+enum CloudProvider {
+  local
+  google_drive
+  dropbox
+}
+
+model User {
+  id             String           @id @default(cuid())
+  email          String           @unique
+  name           String?
+  passwordHash   String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  sessions       Session[]
+  subscriptions  Subscription[]
+  files          StoredFile[]
+  jobs           ProcessingJob[]
+  workflows      Workflow[]
+  cloudAccounts  CloudConnection[]
+  twoFactor      TwoFactorMethod[]
+  usageCounters  UsageCounter[]
+  auditEvents    AuditEvent[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
+model TwoFactorMethod {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label         String
+  secret        String
+  enabled       Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  lastVerifiedAt DateTime?
+}
+
+model Subscription {
+  id                 String   @id @default(cuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier               PlanTier
+  provider           String
+  providerCustomerId String?
+  providerPlanId     String?
+  status             String
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model StoredFile {
+  id           String        @id @default(cuid())
+  userId       String?
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  source       CloudProvider @default(local)
+  originalName String
+  mimeType     String
+  sizeBytes    BigInt
+  pageCount    Int?
+  storageKey   String        @unique
+  checksumSha256 String?
+  expiresAt    DateTime?
+  createdAt    DateTime      @default(now())
+  inputJobs    ProcessingJob[] @relation("InputFiles")
+  artifacts    JobArtifact[]
+}
+
+model ProcessingJob {
+  id               String         @id @default(cuid())
+  userId           String?
+  user             User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  tool             String
+  optionVersion    String
+  status           JobStatus
+  planTier         PlanTier
+  sourceProvider   CloudProvider
+  progressPercent  Float          @default(0)
+  errorCode        String?
+  errorMessage     String?
+  retentionHours   Int
+  optionsJson      Json
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  expiresAt        DateTime
+  inputFiles       StoredFile[]   @relation("InputFiles")
+  artifacts        JobArtifact[]
+}
+
+model JobArtifact {
+  id          String        @id @default(cuid())
+  jobId        String
+  job          ProcessingJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  storedFileId String
+  storedFile   StoredFile    @relation(fields: [storedFileId], references: [id], onDelete: Cascade)
+  downloadToken String       @unique
+  createdAt     DateTime     @default(now())
+}
+
+model Workflow {
+  id          String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  description  String
+  stepsJson    Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model CloudConnection {
+  id               String        @id @default(cuid())
+  userId           String
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider         CloudProvider
+  externalUserId   String?
+  accessToken      String?
+  refreshToken     String?
+  expiresAt        DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+model AuditEvent {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action      String
+  targetType  String
+  targetId    String?
+  metadataJson Json
+  createdAt   DateTime @default(now())
+}
+
+model UsageCounter {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  tier       PlanTier
+  dayKey     String
+  jobsCount  Int      @default(0)
+  bytesIn    BigInt   @default(0)
+  bytesOut   BigInt   @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, dayKey])
+}

@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "@pdf-platform/types": ["packages/types/src"],
+      "@pdf-platform/ui": ["packages/ui/src"],
+      "@pdf-platform/config": ["packages/config/src"],
+      "@pdf-platform/pdf-core": ["packages/pdf-core/src"]
+    }
+  }
+}

@@ -1,0 +1,12 @@
+HTTP/1.1 200 OK
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+content-disposition: attachment; filename="sample.jpg"
+content-type: image/jpeg
+x-image-height: 288
+x-image-width: 600
+x-output-file-name: sample.jpg
+Date: Tue, 24 Mar 2026 12:32:02 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+

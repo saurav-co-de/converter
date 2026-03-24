@@ -1,0 +1,22 @@
+{
+  "name": "pdf-platform",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @pdf-platform/web",
+    "dev:web": "npm run dev --workspace @pdf-platform/web",
+    "dev:worker": "npm run dev --workspace @pdf-platform/worker",
+    "build": "node scripts/run-workspaces.mjs build",
+    "lint": "node scripts/run-workspaces.mjs lint",
+    "typecheck": "node scripts/run-workspaces.mjs typecheck",
+    "db:generate": "npm run db:generate --workspace @pdf-platform/config",
+    "db:migrate": "npm run db:migrate --workspace @pdf-platform/config"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

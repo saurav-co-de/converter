@@ -1,0 +1,98 @@
+services:
+  - type: web
+    name: pdf-platform-web
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./infra/web.Dockerfile
+    dockerContext: .
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pdf-platform-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromDatabase:
+          name: pdf-platform-redis
+          property: connectionString
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_REGION
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: UPLOAD_URL_TTL_SECONDS
+        value: "900"
+      - key: DOWNLOAD_URL_TTL_SECONDS
+        value: "900"
+      - key: FILE_RETENTION_HOURS
+        value: "2"
+
+  - type: worker
+    name: pdf-platform-worker
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./infra/worker.Dockerfile
+    dockerContext: .
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pdf-platform-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromDatabase:
+          name: pdf-platform-redis
+          property: connectionString
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_REGION
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: UPLOAD_URL_TTL_SECONDS
+        value: "900"
+      - key: DOWNLOAD_URL_TTL_SECONDS
+        value: "900"
+      - key: FILE_RETENTION_HOURS
+        value: "2"
+
+databases:
+  - name: pdf-platform-postgres
+    databaseName: pdf_platform
+    user: pdf_platform
+    plan: free
+    postgresMajorVersion: "16"
+    ipAllowList: []
+
+  - name: pdf-platform-redis
+    plan: free
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
